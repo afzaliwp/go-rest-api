@@ -1,30 +1,71 @@
 package services
 
 import (
+	"fmt"
+	"github.com/afzaliwp/go-rest-api/db"
 	"github.com/afzaliwp/go-rest-api/models"
-	"time"
 )
 
-func GetEvents() []models.Event {
-	eventTime1, _ := time.Parse("2006-01-02 15:04", "2025-05-12 12:30")
-	eventTime2, _ := time.Parse("2006-01-02 15:04", "2027-09-22 13:45")
-	events := []models.Event{
-		models.NewEvent(
-			"title here",
-			"description here",
-			"France, Paris",
-			eventTime1,
-			12,
-		),
-
-		models.NewEvent(
-			"title here 2",
-			"description here 2",
-			"Iran, Tehran",
-			eventTime2,
-			5,
-		),
+func GetEvents() ([]models.Event, error) {
+	query, err := db.DB.Query("SELECT * FROM events")
+	if err != nil {
+		return nil, err
 	}
 
-	return events
+	defer query.Close()
+
+	var events []models.Event
+
+	for query.Next() {
+		var event models.Event
+		err = query.Scan(
+			&event.ID,
+			&event.Title,
+			&event.Description,
+			&event.Location,
+			&event.DateTime,
+			&event.UserId,
+			&event.CreatedAt,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		events = append(events, event)
+	}
+
+	return events, nil
+}
+
+func InsertEvent(event *models.Event) (err error) {
+	query := `INSERT INTO events(title, description, location, date_time, user_id, created_at)
+				VALUES(?, ?, ?, ?, ?, ?)
+				`
+
+	statement, err := db.DB.Prepare(query)
+	if err != nil {
+		return fmt.Errorf("Error while preparing statement: %v", err)
+	}
+
+	defer statement.Close()
+
+	result, err := statement.Exec(
+		event.Title,
+		event.Description,
+		event.Location,
+		event.DateTime,
+		event.UserId,
+		event.CreatedAt,
+	)
+
+	id, _ := result.LastInsertId()
+
+	if err != nil {
+		return fmt.Errorf("Error while executing statement: %v", err)
+	}
+
+	event.ID = id
+
+	return nil
 }
