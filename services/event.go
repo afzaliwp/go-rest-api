@@ -69,3 +69,30 @@ func InsertEvent(event *models.Event) (err error) {
 
 	return nil
 }
+
+func GetEventById(eventId int64) (event *models.Event, err error) {
+	query := `SELECT * FROM events WHERE id=?`
+	statement, err := db.DB.Prepare(query)
+	if err != nil {
+		return nil, fmt.Errorf("Error while preparing statement: %v", err)
+	}
+
+	defer statement.Close()
+
+	row := statement.QueryRow(eventId)
+	event = &models.Event{}
+	err = row.Scan(
+		&event.ID,
+		&event.Title,
+		&event.Description,
+		&event.Location,
+		&event.DateTime,
+		&event.UserId,
+		&event.CreatedAt,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return event, nil
+}

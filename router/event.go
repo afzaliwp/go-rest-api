@@ -7,5 +7,6 @@ import (
 
 func HandleEventRoutes(server *gin.Engine) {
 	server.GET("/events", controllers.GetEvents)
+	server.GET("/events/:id", controllers.GetEventById)
 	server.POST("/event", controllers.NewEvent)
 }

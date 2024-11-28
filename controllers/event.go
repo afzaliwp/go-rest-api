@@ -24,6 +24,31 @@ func GetEvents(c *gin.Context) {
 	})
 }
 
+func GetEventById(c *gin.Context) {
+	idParam := c.Param("id")
+	idInt, err := strconv.Atoi(idParam)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "id must be integer",
+			"error":   err.Error(),
+		})
+	}
+	id := int64(idInt)
+
+	event, err := services.GetEventById(id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "failed to get event: " + idParam,
+			"error":   err.Error(),
+		})
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "OK",
+		"event":   event,
+	})
+}
+
 func NewEvent(c *gin.Context) {
 	eventTime, _ := time.Parse("2006-01-02 15:04", c.PostForm("event_time"))
 	userID, _ := strconv.Atoi(c.PostForm("user_id"))
