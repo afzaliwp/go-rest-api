@@ -74,3 +74,81 @@ func NewEvent(c *gin.Context) {
 		"event":   event,
 	})
 }
+
+func UpdateEvent(c *gin.Context) {
+	idParam := c.Param("id")
+	idInt, err := strconv.Atoi(idParam)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "id must be an integer",
+			"error":   err.Error(),
+		})
+	}
+	id := int64(idInt)
+
+	event, err := services.GetEventById(id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "failed to get event: " + idParam,
+		})
+	}
+
+	// Helper function to update fields
+	updateField := func(field *string, formValue string) {
+		if formValue != "" {
+			*field = formValue
+		}
+	}
+
+	updateField(&event.Title, c.PostForm("title"))
+	updateField(&event.Description, c.PostForm("description"))
+	updateField(&event.Location, c.PostForm("location"))
+
+	if eventTimeStr := c.PostForm("event_time"); "" != eventTimeStr {
+		eventTime, _ := time.Parse("2006-01-02 15:04", eventTimeStr)
+		event.DateTime = eventTime
+	}
+
+	if userIdStr := c.PostForm("user_id"); "" != userIdStr {
+		userID, _ := strconv.Atoi(userIdStr)
+		event.UserId = int64(userID)
+	}
+
+	err = services.UpdateEventById(event)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "failed to update event: " + idParam,
+			"error":   err.Error(),
+		})
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "OK",
+		"event":   event,
+	})
+}
+
+func DeleteEvent(c *gin.Context) {
+	idParam := c.Param("id")
+	idInt, err := strconv.Atoi(idParam)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "id must be an integer",
+			"error":   err.Error(),
+		})
+	}
+
+	id := int64(idInt)
+	err = services.DeleteEventById(id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "failed to delete event: " + idParam,
+			"error":   err.Error(),
+		})
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":  "OK",
+		"event_id": id,
+	})
+}

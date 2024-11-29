@@ -62,7 +62,7 @@ func InsertEvent(event *models.Event) (err error) {
 	id, _ := result.LastInsertId()
 
 	if err != nil {
-		return fmt.Errorf("Error while executing statement: %v", err)
+		return fmt.Errorf("Error while executing insert statement: %v", err)
 	}
 
 	event.ID = id
@@ -74,7 +74,7 @@ func GetEventById(eventId int64) (event *models.Event, err error) {
 	query := `SELECT * FROM events WHERE id=?`
 	statement, err := db.DB.Prepare(query)
 	if err != nil {
-		return nil, fmt.Errorf("Error while preparing statement: %v", err)
+		return nil, fmt.Errorf("Error while preparing get statement: %v", err)
 	}
 
 	defer statement.Close()
@@ -95,4 +95,54 @@ func GetEventById(eventId int64) (event *models.Event, err error) {
 	}
 
 	return event, nil
+}
+
+func DeleteEventById(eventId int64) error {
+	_, err := GetEventById(eventId)
+	if err != nil {
+		return err
+	}
+
+	query := `DELETE FROM events WHERE id=?`
+	statement, err := db.DB.Prepare(query)
+	if err != nil {
+		return fmt.Errorf("Error while preparing delete statement: %v", err)
+	}
+
+	defer statement.Close()
+
+	_, err = statement.Exec(eventId)
+	if err != nil {
+		return fmt.Errorf("Error while executing delete statement: %v", err)
+	}
+
+	return nil
+}
+
+func UpdateEventById(event *models.Event) error {
+	query := `UPDATE events
+			SET title=?, description=?, location=?, date_time=?, user_id=?
+			WHERE id=?`
+
+	statement, err := db.DB.Prepare(query)
+
+	if err != nil {
+		return fmt.Errorf("Error while preparing update statement: %v", err)
+	}
+
+	defer statement.Close()
+
+	_, err = statement.Exec(
+		event.Title,
+		event.Description,
+		event.Location,
+		event.DateTime,
+		event.UserId,
+		event.ID,
+	)
+	if err != nil {
+		return fmt.Errorf("Error while executing update statement: %v", err)
+	}
+
+	return nil
 }
