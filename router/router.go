@@ -7,4 +7,5 @@ import (
 func InitializeRoutes(server *gin.Engine) {
 	HandleIndexRoutes(server)
 	HandleEventRoutes(server)
+	//HandleAuthRoutes(server)
 }
