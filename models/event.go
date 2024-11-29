@@ -1,7 +1,6 @@
 package models
 
 import (
-	"math/rand"
 	"time"
 )
 
@@ -16,9 +15,7 @@ type Event struct {
 }
 
 func NewEvent(title, description string, location string, dateTime time.Time, userId int) Event {
-	id := rand.Intn(9000) + 1000
 	return Event{
-		ID:          int64(id),
 		Title:       title,
 		Description: description,
 		Location:    location,
