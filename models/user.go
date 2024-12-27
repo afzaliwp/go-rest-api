@@ -7,8 +7,8 @@ type User struct {
 	Password string `binding:"required" ,json:"password"`
 }
 
-func NewUser(name, email, password string) *User {
-	return &User{
+func NewUser(name, email, password string) User {
+	return User{
 		Name:     name,
 		Email:    email,
 		Password: password,

@@ -36,31 +36,25 @@ func GetUsers() ([]models.User, error) {
 }
 
 func InsertUser(user *models.User) (err error) {
-	query := `INSERT INTO users(name, email, password)
-				VALUES(?, ?, ?)
-				`
+	query := `INSERT INTO users(name, email, password) VALUES(?, ?, ?)`
 
 	statement, err := db.DB.Prepare(query)
 	if err != nil {
 		return fmt.Errorf("Error while preparing statement: %v", err)
 	}
-
 	defer statement.Close()
 
-	result, err := statement.Exec(
-		user.Name,
-		user.Email,
-		user.Password,
-	)
-
-	id, _ := result.LastInsertId()
-
+	result, err := statement.Exec(user.Name, user.Email, user.Password)
 	if err != nil {
 		return fmt.Errorf("Error while executing insert statement: %v", err)
 	}
 
-	user.ID = id
+	id, err := result.LastInsertId()
+	if err != nil {
+		return fmt.Errorf("Error getting last insert ID: %v", err)
+	}
 
+	user.ID = id
 	return nil
 }
 
