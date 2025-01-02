@@ -77,9 +77,17 @@ func Login(c *gin.Context) {
 		return
 	}
 
+	token, err := utils.GenerateToken(userModel.ID, userModel.Email, userModel.Name)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "failed to login user",
+			"error":   "failed to generate token",
+		})
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"message": "login user successfully",
-		"user":    userModel,
+		"token":   token,
 	})
 }
 
